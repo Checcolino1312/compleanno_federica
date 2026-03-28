@@ -35,7 +35,7 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   /* Scanline effect */
@@ -277,15 +277,18 @@
     .terminal-window {
       border-radius: 0;
       border: none;
-      min-height: 100vh;
+      height: 100vh;
+      height: 100dvh;
       max-width: 100%;
       box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .title-bar {
       padding: 10px 12px;
-      position: sticky;
-      top: 0;
+      flex-shrink: 0;
       z-index: 10;
     }
 
@@ -296,10 +299,12 @@
     .terminal-body {
       padding: 12px;
       font-size: 12px;
-      min-height: calc(100vh - 44px);
+      flex: 1;
+      min-height: 0;
       max-height: none;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     .line.big {
