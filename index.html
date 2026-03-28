@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎂 Buon Compleanno Federica!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --cyan: #39d2c0;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --pink: #f778ba;
+    --purple: #bc8cff;
+    --dim: #6e7681;
+    --cursor: #58a6ff;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  /* Scanline effect */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .terminal-window {
+    width: 100%;
+    max-width: 820px;
+    background: var(--panel);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.3),
+      0 16px 70px rgba(0,0,0,0.5),
+      0 0 80px rgba(88,166,255,0.07);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .title-bar {
+    background: linear-gradient(180deg, #1f2428 0%, #1a1e23 100%);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+  }
+
+  .traffic-light {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .tl-red { background: #ff5f57; box-shadow: 0 0 6px #ff5f5744; }
+  .tl-yellow { background: #febc2e; box-shadow: 0 0 6px #febc2e44; }
+  .tl-green { background: #28c840; box-shadow: 0 0 6px #28c84044; }
+
+  .title-text {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.5px;
+  }
+
+  .terminal-body {
+    padding: 20px;
+    min-height: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    font-size: 13.5px;
+    line-height: 1.7;
+    scroll-behavior: smooth;
+  }
+
+  .terminal-body::-webkit-scrollbar { width: 6px; }
+  .terminal-body::-webkit-scrollbar-track { background: transparent; }
+  .terminal-body::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  .line { white-space: pre-wrap; word-break: break-all; }
+  .line.green { color: var(--green); }
+  .line.blue { color: var(--blue); }
+  .line.cyan { color: var(--cyan); }
+  .line.yellow { color: var(--yellow); }
+  .line.orange { color: var(--orange); }
+  .line.red { color: var(--red); }
+  .line.pink { color: var(--pink); }
+  .line.purple { color: var(--purple); }
+  .line.dim { color: var(--dim); }
+  .line.bold { font-weight: 700; }
+  .line.big {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .prompt-line {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .prompt {
+    color: var(--green);
+    font-weight: 600;
+    white-space: pre;
+  }
+
+  .prompt .path {
+    color: var(--blue);
+    font-weight: 400;
+  }
+
+  .prompt .arrow {
+    color: var(--cyan);
+  }
+
+  #input-area {
+    display: inline-flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  #cmd-input {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    width: 100%;
+    caret-color: var(--cursor);
+    line-height: 1.7;
+  }
+
+  #cmd-input::placeholder {
+    color: var(--dim);
+    opacity: 0.6;
+  }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 8px;
+    height: 17px;
+    background: var(--cursor);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+    margin-left: 1px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .service-block {
+    margin: 4px 0;
+    opacity: 0;
+    transform: translateY(5px);
+    animation: fadeUp 0.3s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .spinner {
+    display: inline-block;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .progress-bar {
+    display: inline-block;
+    background: var(--border);
+    border-radius: 3px;
+    height: 10px;
+    width: 200px;
+    overflow: hidden;
+    vertical-align: middle;
+    margin: 0 6px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .cake-art {
+    color: var(--yellow);
+    line-height: 1.3;
+    font-size: 12px;
+  }
+
+  .confetti {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    z-index: 999;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  .hidden { display: none; }
+
+  .help-text {
+    color: var(--dim);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  /* Glow effect for the big reveal */
+  .glow-text {
+    text-shadow: 0 0 10px currentColor, 0 0 30px currentColor;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ═══ MOBILE RESPONSIVE ═══ */
+  @media (max-width: 600px) {
+    body {
+      padding: 0;
+      align-items: stretch;
+    }
+
+    .terminal-window {
+      border-radius: 0;
+      border: none;
+      min-height: 100vh;
+      max-width: 100%;
+      box-shadow: none;
+    }
+
+    .title-bar {
+      padding: 10px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .title-text {
+      font-size: 11px;
+    }
+
+    .terminal-body {
+      padding: 12px;
+      font-size: 12px;
+      min-height: calc(100vh - 44px);
+      max-height: none;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .line.big {
+      font-size: 13px;
+    }
+
+    .prompt {
+      font-size: 12px;
+    }
+
+    /* Shorter prompt on mobile */
+    .prompt .path {
+      font-size: 11px;
+    }
+
+    .prompt-line {
+      flex-wrap: nowrap;
+    }
+
+    #cmd-input {
+      font-size: 16px; /* prevents iOS zoom on focus */
+    }
+
+    .cake-art {
+      font-size: 10px;
+    }
+
+    .confetti {
+      width: 6px;
+      height: 6px;
+    }
+
+    .service-block {
+      font-size: 11.5px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .terminal-body {
+      padding: 8px;
+      font-size: 11px;
+    }
+
+    .line.big {
+      font-size: 12px;
+    }
+
+    .service-block {
+      font-size: 11px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="terminal-window">
+  <div class="title-bar">
+    <span class="traffic-light tl-red"></span>
+    <span class="traffic-light tl-yellow"></span>
+    <span class="traffic-light tl-green"></span>
+    <span class="title-text">federica@party — bash — 80×24</span>
+  </div>
+  <div class="terminal-body" id="terminal">
+    <div class="line dim">GNU bash, version 5.2.26 — Buon Compleanno Edition™</div>
+    <div class="line dim" id="hint-text">Digita un comando. Prova: docker compose up --build</div>
+    <div class="line">&nbsp;</div>
+    <div class="prompt-line" id="prompt-container">
+      <span class="prompt"><span class="arrow">❯</span> <span class="path" id="prompt-path">~/compleanno-federica</span> $ </span>
+      <span id="input-area">
+        <input type="text" id="cmd-input" autofocus autocomplete="off" spellcheck="false" />
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+const terminal = document.getElementById('terminal');
+const cmdInput = document.getElementById('cmd-input');
+const promptContainer = document.getElementById('prompt-container');
+
+// ══════════════════════════════════════════════════════
+// 🎁  PERSONALIZZA QUI I NOMI DEI PARTECIPANTI!
+// ══════════════════════════════════════════════════════
+const partecipanti = [
+  { nome: "Annachiara",  emoji: "💖", color: "blue", errore: false },
+  { nome: "Annalucia",   emoji: "🌸", color: "blue", errore: false },
+  { nome: "Davide",      emoji: "⚠️", color: "red",  errore: true },
+  { nome: "Francesca",   emoji: "✨", color: "blue", errore: false },
+  { nome: "Gabriele",    emoji: "🎸", color: "blue", errore: false },
+  { nome: "Salvatore",   emoji: "🔥", color: "blue", errore: false },
+  { nome: "Alessandro",  emoji: "⚠️", color: "red",  errore: true },
+  { nome: "Alessia",     emoji: "💐", color: "blue", errore: false },
+  { nome: "Checcolino",  emoji: "🎉", color: "blue", errore: false },
+];
+
+const isMobile = window.innerWidth <= 600;
+
+const auguriBig = isMobile ? `
+ ╔════════════════════════╗
+ ║                        ║
+ ║  🎂 BUON COMPLEANNO   ║
+ ║     FEDERICA! 🎂      ║
+ ║                        ║
+ ╚════════════════════════╝
+` : `
+ ╔══════════════════════════════════════════════╗
+ ║                                              ║
+ ║   🎂  BUON COMPLEANNO FEDERICA!  🎂         ║
+ ║                                              ║
+ ╚══════════════════════════════════════════════╝
+`;
+
+const sep = isMobile ? '══════════════════════════' : '═══════════════════════════════════════════════════';
+
+// Separator helper
+function addSep() { addLine(sep, 'yellow'); }
+
+let isRunning = false;
+let commandHistory = [];
+let historyIndex = -1;
+
+cmdInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const cmd = cmdInput.value.trim();
+    if (cmd) {
+      commandHistory.unshift(cmd);
+      historyIndex = -1;
+      handleCommand(cmd);
+    }
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      cmdInput.value = commandHistory[historyIndex];
+    }
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (historyIndex > 0) {
+      historyIndex--;
+      cmdInput.value = commandHistory[historyIndex];
+    } else {
+      historyIndex = -1;
+      cmdInput.value = '';
+    }
+  }
+});
+
+document.addEventListener('click', () => cmdInput.focus());
+
+function addLine(text, cls = '') {
+  const div = document.createElement('div');
+  div.className = 'line' + (cls ? ' ' + cls : '');
+  div.innerHTML = text;
+  terminal.insertBefore(div, promptContainer);
+  scrollToBottom();
+}
+
+function addBlock(html, cls = '') {
+  const div = document.createElement('div');
+  div.className = 'service-block' + (cls ? ' ' + cls : '');
+  div.innerHTML = html;
+  terminal.insertBefore(div, promptContainer);
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function showPrompt() {
+  promptContainer.classList.remove('hidden');
+  cmdInput.value = '';
+  cmdInput.disabled = false;
+  cmdInput.focus();
+  scrollToBottom();
+}
+
+function hidePrompt() {
+  promptContainer.classList.add('hidden');
+  cmdInput.disabled = true;
+}
+
+function launchConfetti() {
+  const colors = ['#3fb950','#58a6ff','#f778ba','#d29922','#f0883e','#bc8cff','#39d2c0','#f85149'];
+  const count = isMobile ? 40 : 80;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration = (2 + Math.random() * 3) + 's';
+      c.style.width = (5 + Math.random() * 8) + 'px';
+      c.style.height = (5 + Math.random() * 8) + 'px';
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }, i * 40);
+  }
+}
+
+async function handleCommand(cmd) {
+  // Echo the command
+  addLine(`${promptStr}${escapeHtml(cmd)}`);
+  hidePrompt();
+
+  const lower = cmd.toLowerCase().replace(/\s+/g, ' ').trim();
+
+  if (lower.includes('docker') && lower.includes('compose') && (lower.includes('up') || lower.includes('build'))) {
+    await runDockerCompose();
+  } else if (lower === 'clear' || lower === 'cls') {
+    const lines = terminal.querySelectorAll('.line, .service-block');
+    lines.forEach(l => l.remove());
+    showPrompt();
+  } else if (lower === 'help' || lower === '--help') {
+    addLine('');
+    addLine('Comandi disponibili:', 'cyan');
+    addLine('  docker compose up --build   Avvia la festa! 🎉', '');
+    addLine('  clear                       Pulisci il terminale', '');
+    addLine('  help                        Mostra questo messaggio', '');
+    addLine('  ls                          Lista dei file', '');
+    addLine('  cat auguri.txt              Leggi gli auguri', '');
+    addLine('');
+    showPrompt();
+  } else if (lower === 'ls' || lower === 'ls -la') {
+    addLine('');
+    addLine('total 42', 'dim');
+    addLine('drwxr-xr-x  federica staff  docker-compose.yml', '');
+    addLine('drwxr-xr-x  federica staff  auguri.txt', '');
+    addLine('drwxr-xr-x  federica staff  🎁-regalo/', 'yellow');
+    addLine('drwxr-xr-x  federica staff  🍰-torta/', 'pink');
+    addLine('drwxr-xr-x  federica staff  📸-foto-festa/', 'cyan');
+    addLine('');
+    showPrompt();
+  } else if (lower === 'cat auguri.txt' || lower === 'cat auguri') {
+    addLine('');
+    addLine('💌 Cara Federica,', 'pink bold');
+    addLine('');
+    addLine('Tanti auguri di buon compleanno!', '');
+    addLine('Che questo nuovo anno ti porti tutto ciò che desideri.', '');
+    addLine('Sei una persona speciale e meriti il meglio. 🌟', '');
+    addLine('');
+    addLine('Con affetto, tutti noi ❤️', 'pink');
+    addLine('');
+    showPrompt();
+  } else if (lower.startsWith('cd ')) {
+    addLine(`bash: cd: troppa festa per cambiare directory! 🎈`, 'yellow');
+    showPrompt();
+  } else if (lower === 'sudo' || lower.startsWith('sudo ')) {
+    addLine(`[sudo] password for federica: ********`, 'dim');
+    await sleep(500);
+    addLine(`Accesso garantito! Oggi è il tuo giorno, puoi tutto! 👑`, 'yellow');
+    showPrompt();
+  } else if (lower === 'exit' || lower === 'quit') {
+    addLine(`La festa non finisce mai! 🎉`, 'pink');
+    showPrompt();
+  } else {
+    addLine(`bash: ${escapeHtml(cmd.split(' ')[0])}: command not found`, 'red');
+    addLine(`Prova con: docker compose up --build`, 'dim');
+    showPrompt();
+  }
+}
+
+async function runDockerCompose() {
+  if (isRunning) return;
+  isRunning = true;
+
+  // Phase 1: Network creation
+  addLine('');
+  addLine('[+] Building compleanno-federica...', 'dim');
+  await sleep(600);
+  addLine(' Network compleanno-federica  <span style="color:var(--green)">Created</span>', '');
+  await sleep(400);
+  addLine('');
+
+  // Phase 2: Pulling images
+  const images = [
+    { name: 'postgres:16-alpine',  label: '🍰 torta-db',        tag: 'La Base della Torta' },
+    { name: 'redis:7-alpine',      label: '🕯️ candeline-cache',  tag: 'Le Candeline' },
+    { name: 'node:20-alpine',      label: '🔔 notifiche-auguri', tag: 'Push Notifications' },
+  ];
+
+  addLine('[+] Pulling images...', 'dim');
+  await sleep(300);
+
+  for (const img of images) {
+    addBlock(`<span style="color:var(--dim)"> ⠿ </span>${img.label} <span style="color:var(--dim)">Pulling ${img.name}...</span>`);
+    await sleep(250 + Math.random() * 200);
+  }
+
+  await sleep(500);
+
+  // Phase 3: Starting containers
+  addLine('');
+  addLine('[+] Starting containers...', 'dim');
+  addLine('');
+  await sleep(400);
+
+  const services = [
+    { emoji: '🍰', name: 'torta-db',         port: '5432', color: 'yellow', status: 'Healthy' },
+    { emoji: '🕯️', name: 'candeline-cache',   port: '6379', color: 'orange', status: 'Ready' },
+    { emoji: '🔔', name: 'notifiche-auguri',  port: '3002', color: 'purple', status: 'Listening' },
+  ];
+
+  for (const svc of services) {
+    addBlock(`<span style="color:var(--${svc.color})">${svc.emoji} Container ${svc.name}</span>  <span style="color:var(--green)">✔ ${svc.status}</span>  <span style="color:var(--dim)">:${svc.port}</span>`);
+    await sleep(350 + Math.random() * 200);
+  }
+
+  await sleep(600);
+
+  // Phase 4: Health checks
+  addLine('');
+  addLine('[+] Running health checks...', 'dim');
+  await sleep(800);
+  addLine(' ✔ All 3 services healthy', 'green');
+  await sleep(600);
+
+  // Phase 5: THE BIG REVEAL
+  addLine('');
+  addLine('');
+  addSep();
+  await sleep(300);
+
+  // Auguri ASCII art
+  const auguriLines = auguriBig.split('\n');
+  for (const al of auguriLines) {
+    if (al.trim()) {
+      addLine(al, 'pink bold glow-text');
+      await sleep(100);
+    }
+  }
+
+  await sleep(500);
+  launchConfetti();
+
+  // Phase 6: Partecipanti al regalo
+  addLine('');
+  addSep();
+  addLine('  🎁  HANNO PARTECIPATO AL REGALO:  🎁', 'cyan bold big');
+  addSep();
+  addLine('');
+  await sleep(500);
+
+  for (let i = 0; i < partecipanti.length; i++) {
+    const p = partecipanti[i];
+
+    if (p.errore) {
+      addBlock(`  <span style="color:var(--red); font-weight:700">${p.emoji}  ${p.nome}</span>  <span style="color:var(--dim)">—</span>  <span style="color:var(--red)">⛔ System Error: Money not found</span>`);
+    } else {
+      addBlock(`  <span style="color:var(--blue); font-weight:700">${p.emoji}  ${p.nome}</span>`);
+    }
+    await sleep(500 + Math.random() * 300);
+  }
+
+  await sleep(600);
+
+  addLine('');
+  addSep();
+  addLine('');
+  addLine('  🥂  Tanti auguri da tutti noi, Federica!  🥂', 'pink bold big glow-text');
+  addLine('');
+  addLine('  🎉  Che sia un anno fantastico!  🎉', 'cyan bold');
+  addLine('');
+  addSep();
+  addLine('');
+
+  // Launch more confetti!
+  launchConfetti();
+
+  await sleep(500);
+
+  addLine('[+] Festa avviata con successo!', 'green bold');
+  addLine(`[+] ${partecipanti.length} persone ti vogliono bene ❤️`, 'green');
+  addLine('');
+
+  isRunning = false;
+  showPrompt();
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// Auto-focus
+cmdInput.focus();
+
+// Mobile adjustments
+if (isMobile) {
+  const pp = document.getElementById('prompt-path');
+  if (pp) pp.textContent = '~/compleanno';
+  cmdInput.setAttribute('placeholder', 'docker compose up --build');
+  const hint = document.getElementById('hint-text');
+  if (hint) hint.textContent = 'Tocca qui sotto e digita il comando ☝️';
+}
+
+// Prompt string for echoed commands
+const promptStr = isMobile
+  ? '<span class="prompt"><span style="color:var(--cyan)">❯</span> <span style="color:var(--blue)">~/compleanno</span> $ </span>'
+  : '<span class="prompt"><span style="color:var(--cyan)">❯</span> <span style="color:var(--blue)">~/compleanno-federica</span> $ </span>';
+</script>
+
+</body>
+</html>
