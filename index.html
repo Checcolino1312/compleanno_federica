@@ -305,6 +305,7 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
+      touch-action: pan-y;
     }
 
     .line.big {
@@ -455,7 +456,19 @@ cmdInput.addEventListener('keydown', (e) => {
   }
 });
 
-document.addEventListener('click', () => cmdInput.focus());
+// Focus input on click, but on mobile don't interfere with scrolling
+if (isMobile) {
+  let touchMoved = false;
+  document.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+  document.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (!touchMoved && !isRunning) {
+      cmdInput.focus();
+    }
+  }, { passive: true });
+} else {
+  document.addEventListener('click', () => cmdInput.focus());
+}
 
 function addLine(text, cls = '') {
   const div = document.createElement('div');
